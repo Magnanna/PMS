@@ -99,6 +99,25 @@ export async function signIn(_prev: FormState, formData: FormData): Promise<Form
   redirect("/dashboard");
 }
 
+const resetSchema = z.object({ email: z.string().email() });
+
+export async function requestPasswordReset(
+  _prev: FormState,
+  formData: FormData
+): Promise<FormState> {
+  const parsed = resetSchema.safeParse({ email: formData.get("email") });
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.resetPasswordForEmail(parsed.data.email);
+
+  // Never reveal whether the email exists — same response either way.
+  if (error) return { error: null };
+  return { error: null };
+}
+
 export async function signOut() {
   const supabase = await createClient();
   await supabase.auth.signOut();
