@@ -1,0 +1,2621 @@
+{
+  "id": "bfc025ce-e9d7-4440-921b-369d848429fe",
+  "prevId": "c1066e3a-3ab5-405f-a02b-e147e0eff6d7",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.audit_logs": {
+      "name": "audit_logs",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "org_id": {
+          "name": "org_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "actor_user_id": {
+          "name": "actor_user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "actor_role": {
+          "name": "actor_role",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "action": {
+          "name": "action",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "entity_type": {
+          "name": "entity_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "entity_id": {
+          "name": "entity_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "before_summary": {
+          "name": "before_summary",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "after_summary": {
+          "name": "after_summary",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ip": {
+          "name": "ip",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "audit_logs_org_idx": {
+          "name": "audit_logs_org_idx",
+          "columns": [
+            {
+              "expression": "org_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        }
+      },
+      "foreignKeys": {
+        "audit_logs_org_id_orgs_id_fk": {
+          "name": "audit_logs_org_id_orgs_id_fk",
+          "tableFrom": "audit_logs",
+          "columnsFrom": [
+            "org_id"
+          ],
+          "tableTo": "orgs",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.invoice_lines": {
+      "name": "invoice_lines",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "invoice_id": {
+          "name": "invoice_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "kind": {
+          "name": "kind",
+          "type": "invoice_line_kind",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "amount_cents": {
+          "name": "amount_cents",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "invoice_lines_invoice_idx": {
+          "name": "invoice_lines_invoice_idx",
+          "columns": [
+            {
+              "expression": "invoice_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        }
+      },
+      "foreignKeys": {
+        "invoice_lines_invoice_id_invoices_id_fk": {
+          "name": "invoice_lines_invoice_id_invoices_id_fk",
+          "tableFrom": "invoice_lines",
+          "columnsFrom": [
+            "invoice_id"
+          ],
+          "tableTo": "invoices",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.invoices": {
+      "name": "invoices",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "org_id": {
+          "name": "org_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "lease_id": {
+          "name": "lease_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "billing_period": {
+          "name": "billing_period",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "invoice_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'open'"
+        },
+        "due_date": {
+          "name": "due_date",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "reference": {
+          "name": "reference",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "invoices_lease_period_uq": {
+          "name": "invoices_lease_period_uq",
+          "columns": [
+            {
+              "expression": "lease_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "billing_period",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        },
+        "invoices_org_reference_uq": {
+          "name": "invoices_org_reference_uq",
+          "columns": [
+            {
+              "expression": "org_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "reference",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        },
+        "invoices_org_idx": {
+          "name": "invoices_org_idx",
+          "columns": [
+            {
+              "expression": "org_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        }
+      },
+      "foreignKeys": {
+        "invoices_org_id_orgs_id_fk": {
+          "name": "invoices_org_id_orgs_id_fk",
+          "tableFrom": "invoices",
+          "columnsFrom": [
+            "org_id"
+          ],
+          "tableTo": "orgs",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        },
+        "invoices_lease_id_leases_id_fk": {
+          "name": "invoices_lease_id_leases_id_fk",
+          "tableFrom": "invoices",
+          "columnsFrom": [
+            "lease_id"
+          ],
+          "tableTo": "leases",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.journal_entries": {
+      "name": "journal_entries",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "org_id": {
+          "name": "org_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "source_type": {
+          "name": "source_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "source_id": {
+          "name": "source_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "memo": {
+          "name": "memo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "posted_at": {
+          "name": "posted_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "voided_by_entry_id": {
+          "name": "voided_by_entry_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "journal_entries_org_idx": {
+          "name": "journal_entries_org_idx",
+          "columns": [
+            {
+              "expression": "org_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        },
+        "journal_entries_source_idx": {
+          "name": "journal_entries_source_idx",
+          "columns": [
+            {
+              "expression": "source_type",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "source_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        }
+      },
+      "foreignKeys": {
+        "journal_entries_org_id_orgs_id_fk": {
+          "name": "journal_entries_org_id_orgs_id_fk",
+          "tableFrom": "journal_entries",
+          "columnsFrom": [
+            "org_id"
+          ],
+          "tableTo": "orgs",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.journal_lines": {
+      "name": "journal_lines",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "entry_id": {
+          "name": "entry_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "account": {
+          "name": "account",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "property_id": {
+          "name": "property_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "unit_id": {
+          "name": "unit_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "debit_cents": {
+          "name": "debit_cents",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "credit_cents": {
+          "name": "credit_cents",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        }
+      },
+      "indexes": {
+        "journal_lines_entry_idx": {
+          "name": "journal_lines_entry_idx",
+          "columns": [
+            {
+              "expression": "entry_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        }
+      },
+      "foreignKeys": {
+        "journal_lines_entry_id_journal_entries_id_fk": {
+          "name": "journal_lines_entry_id_journal_entries_id_fk",
+          "tableFrom": "journal_lines",
+          "columnsFrom": [
+            "entry_id"
+          ],
+          "tableTo": "journal_entries",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        },
+        "journal_lines_property_id_properties_id_fk": {
+          "name": "journal_lines_property_id_properties_id_fk",
+          "tableFrom": "journal_lines",
+          "columnsFrom": [
+            "property_id"
+          ],
+          "tableTo": "properties",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        },
+        "journal_lines_unit_id_units_id_fk": {
+          "name": "journal_lines_unit_id_units_id_fk",
+          "tableFrom": "journal_lines",
+          "columnsFrom": [
+            "unit_id"
+          ],
+          "tableTo": "units",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.lease_amendments": {
+      "name": "lease_amendments",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "org_id": {
+          "name": "org_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "lease_id": {
+          "name": "lease_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "effective_date": {
+          "name": "effective_date",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "changed_fields": {
+          "name": "changed_fields",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "reason": {
+          "name": "reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "accepted_by_user_id": {
+          "name": "accepted_by_user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "accepted_at": {
+          "name": "accepted_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "accepted_ip": {
+          "name": "accepted_ip",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "document_hash": {
+          "name": "document_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "lease_amendments_lease_idx": {
+          "name": "lease_amendments_lease_idx",
+          "columns": [
+            {
+              "expression": "lease_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        }
+      },
+      "foreignKeys": {
+        "lease_amendments_org_id_orgs_id_fk": {
+          "name": "lease_amendments_org_id_orgs_id_fk",
+          "tableFrom": "lease_amendments",
+          "columnsFrom": [
+            "org_id"
+          ],
+          "tableTo": "orgs",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        },
+        "lease_amendments_lease_id_leases_id_fk": {
+          "name": "lease_amendments_lease_id_leases_id_fk",
+          "tableFrom": "lease_amendments",
+          "columnsFrom": [
+            "lease_id"
+          ],
+          "tableTo": "leases",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.leases": {
+      "name": "leases",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "org_id": {
+          "name": "org_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "unit_id": {
+          "name": "unit_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tenant_profile_id": {
+          "name": "tenant_profile_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "start_date": {
+          "name": "start_date",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "end_date": {
+          "name": "end_date",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "rent_amount_cents": {
+          "name": "rent_amount_cents",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "deposit_amount_cents": {
+          "name": "deposit_amount_cents",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "billing_day": {
+          "name": "billing_day",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "controlled_tenancy": {
+          "name": "controlled_tenancy",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "guarantor_name": {
+          "name": "guarantor_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "guarantor_phone": {
+          "name": "guarantor_phone",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "lease_document_path": {
+          "name": "lease_document_path",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status": {
+          "name": "status",
+          "type": "lease_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'active'"
+        },
+        "terminated_at": {
+          "name": "terminated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "termination_reason": {
+          "name": "termination_reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "leases_org_idx": {
+          "name": "leases_org_idx",
+          "columns": [
+            {
+              "expression": "org_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        },
+        "leases_unit_idx": {
+          "name": "leases_unit_idx",
+          "columns": [
+            {
+              "expression": "unit_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        },
+        "leases_tenant_idx": {
+          "name": "leases_tenant_idx",
+          "columns": [
+            {
+              "expression": "tenant_profile_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        }
+      },
+      "foreignKeys": {
+        "leases_org_id_orgs_id_fk": {
+          "name": "leases_org_id_orgs_id_fk",
+          "tableFrom": "leases",
+          "columnsFrom": [
+            "org_id"
+          ],
+          "tableTo": "orgs",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        },
+        "leases_unit_id_units_id_fk": {
+          "name": "leases_unit_id_units_id_fk",
+          "tableFrom": "leases",
+          "columnsFrom": [
+            "unit_id"
+          ],
+          "tableTo": "units",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        },
+        "leases_tenant_profile_id_tenant_profiles_id_fk": {
+          "name": "leases_tenant_profile_id_tenant_profiles_id_fk",
+          "tableFrom": "leases",
+          "columnsFrom": [
+            "tenant_profile_id"
+          ],
+          "tableTo": "tenant_profiles",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.maintenance_attachments": {
+      "name": "maintenance_attachments",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "ticket_id": {
+          "name": "ticket_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "storage_path": {
+          "name": "storage_path",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "maintenance_attachments_ticket_idx": {
+          "name": "maintenance_attachments_ticket_idx",
+          "columns": [
+            {
+              "expression": "ticket_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        }
+      },
+      "foreignKeys": {
+        "maintenance_attachments_ticket_id_maintenance_tickets_id_fk": {
+          "name": "maintenance_attachments_ticket_id_maintenance_tickets_id_fk",
+          "tableFrom": "maintenance_attachments",
+          "columnsFrom": [
+            "ticket_id"
+          ],
+          "tableTo": "maintenance_tickets",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.maintenance_tickets": {
+      "name": "maintenance_tickets",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "org_id": {
+          "name": "org_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "unit_id": {
+          "name": "unit_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "lease_id": {
+          "name": "lease_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "category": {
+          "name": "category",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "ticket_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'open'"
+        },
+        "vendor_id": {
+          "name": "vendor_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cost_cents": {
+          "name": "cost_cents",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "billable_to_tenant": {
+          "name": "billable_to_tenant",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "resolved_at": {
+          "name": "resolved_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "maintenance_tickets_org_idx": {
+          "name": "maintenance_tickets_org_idx",
+          "columns": [
+            {
+              "expression": "org_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        },
+        "maintenance_tickets_unit_idx": {
+          "name": "maintenance_tickets_unit_idx",
+          "columns": [
+            {
+              "expression": "unit_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        }
+      },
+      "foreignKeys": {
+        "maintenance_tickets_org_id_orgs_id_fk": {
+          "name": "maintenance_tickets_org_id_orgs_id_fk",
+          "tableFrom": "maintenance_tickets",
+          "columnsFrom": [
+            "org_id"
+          ],
+          "tableTo": "orgs",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        },
+        "maintenance_tickets_unit_id_units_id_fk": {
+          "name": "maintenance_tickets_unit_id_units_id_fk",
+          "tableFrom": "maintenance_tickets",
+          "columnsFrom": [
+            "unit_id"
+          ],
+          "tableTo": "units",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        },
+        "maintenance_tickets_lease_id_leases_id_fk": {
+          "name": "maintenance_tickets_lease_id_leases_id_fk",
+          "tableFrom": "maintenance_tickets",
+          "columnsFrom": [
+            "lease_id"
+          ],
+          "tableTo": "leases",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        },
+        "maintenance_tickets_vendor_id_vendors_id_fk": {
+          "name": "maintenance_tickets_vendor_id_vendors_id_fk",
+          "tableFrom": "maintenance_tickets",
+          "columnsFrom": [
+            "vendor_id"
+          ],
+          "tableTo": "vendors",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.mpesa_credentials_per_org": {
+      "name": "mpesa_credentials_per_org",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "org_id": {
+          "name": "org_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "shortcode_type": {
+          "name": "shortcode_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "shortcode": {
+          "name": "shortcode",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "account_number_prefix": {
+          "name": "account_number_prefix",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "consumer_key_encrypted": {
+          "name": "consumer_key_encrypted",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "consumer_secret_encrypted": {
+          "name": "consumer_secret_encrypted",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "passkey_encrypted": {
+          "name": "passkey_encrypted",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "environment": {
+          "name": "environment",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'sandbox'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "mpesa_credentials_org_uq": {
+          "name": "mpesa_credentials_org_uq",
+          "columns": [
+            {
+              "expression": "org_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        }
+      },
+      "foreignKeys": {
+        "mpesa_credentials_per_org_org_id_orgs_id_fk": {
+          "name": "mpesa_credentials_per_org_org_id_orgs_id_fk",
+          "tableFrom": "mpesa_credentials_per_org",
+          "columnsFrom": [
+            "org_id"
+          ],
+          "tableTo": "orgs",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.notification_log": {
+      "name": "notification_log",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "org_id": {
+          "name": "org_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tenant_profile_id": {
+          "name": "tenant_profile_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "channel": {
+          "name": "channel",
+          "type": "notification_channel",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "template": {
+          "name": "template",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "notification_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'queued'"
+        },
+        "gateway_id": {
+          "name": "gateway_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "failure_reason": {
+          "name": "failure_reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "notification_log_org_idx": {
+          "name": "notification_log_org_idx",
+          "columns": [
+            {
+              "expression": "org_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        }
+      },
+      "foreignKeys": {
+        "notification_log_org_id_orgs_id_fk": {
+          "name": "notification_log_org_id_orgs_id_fk",
+          "tableFrom": "notification_log",
+          "columnsFrom": [
+            "org_id"
+          ],
+          "tableTo": "orgs",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        },
+        "notification_log_tenant_profile_id_tenant_profiles_id_fk": {
+          "name": "notification_log_tenant_profile_id_tenant_profiles_id_fk",
+          "tableFrom": "notification_log",
+          "columnsFrom": [
+            "tenant_profile_id"
+          ],
+          "tableTo": "tenant_profiles",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.org_members": {
+      "name": "org_members",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "org_id": {
+          "name": "org_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "role": {
+          "name": "role",
+          "type": "org_role",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "org_members_org_user_uq": {
+          "name": "org_members_org_user_uq",
+          "columns": [
+            {
+              "expression": "org_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        }
+      },
+      "foreignKeys": {
+        "org_members_org_id_orgs_id_fk": {
+          "name": "org_members_org_id_orgs_id_fk",
+          "tableFrom": "org_members",
+          "columnsFrom": [
+            "org_id"
+          ],
+          "tableTo": "orgs",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.org_settings": {
+      "name": "org_settings",
+      "schema": "",
+      "columns": {
+        "org_id": {
+          "name": "org_id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "late_fee_enabled": {
+          "name": "late_fee_enabled",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "late_fee_grace_days": {
+          "name": "late_fee_grace_days",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "late_fee_flat_cents": {
+          "name": "late_fee_flat_cents",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "late_fee_percent_bps": {
+          "name": "late_fee_percent_bps",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "reminder_days_before": {
+          "name": "reminder_days_before",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 3
+        },
+        "sms_monthly_cost_cap_cents": {
+          "name": "sms_monthly_cost_cap_cents",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "org_settings_org_id_orgs_id_fk": {
+          "name": "org_settings_org_id_orgs_id_fk",
+          "tableFrom": "org_settings",
+          "columnsFrom": [
+            "org_id"
+          ],
+          "tableTo": "orgs",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.orgs": {
+      "name": "orgs",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "kra_pin": {
+          "name": "kra_pin",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "registered_address": {
+          "name": "registered_address",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "contact_person": {
+          "name": "contact_person",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "plan": {
+          "name": "plan",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'free'"
+        },
+        "compliance_overrides": {
+          "name": "compliance_overrides",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.payment_allocations": {
+      "name": "payment_allocations",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "payment_id": {
+          "name": "payment_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "invoice_id": {
+          "name": "invoice_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "amount_cents": {
+          "name": "amount_cents",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "payment_allocations_payment_idx": {
+          "name": "payment_allocations_payment_idx",
+          "columns": [
+            {
+              "expression": "payment_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        },
+        "payment_allocations_invoice_idx": {
+          "name": "payment_allocations_invoice_idx",
+          "columns": [
+            {
+              "expression": "invoice_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        }
+      },
+      "foreignKeys": {
+        "payment_allocations_payment_id_payments_id_fk": {
+          "name": "payment_allocations_payment_id_payments_id_fk",
+          "tableFrom": "payment_allocations",
+          "columnsFrom": [
+            "payment_id"
+          ],
+          "tableTo": "payments",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        },
+        "payment_allocations_invoice_id_invoices_id_fk": {
+          "name": "payment_allocations_invoice_id_invoices_id_fk",
+          "tableFrom": "payment_allocations",
+          "columnsFrom": [
+            "invoice_id"
+          ],
+          "tableTo": "invoices",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.payments": {
+      "name": "payments",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "org_id": {
+          "name": "org_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "lease_id": {
+          "name": "lease_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "method": {
+          "name": "method",
+          "type": "payment_method",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "payment_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'pending'"
+        },
+        "amount_cents": {
+          "name": "amount_cents",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "mpesa_receipt_number": {
+          "name": "mpesa_receipt_number",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "reference_note": {
+          "name": "reference_note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "paid_at": {
+          "name": "paid_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "reversal_of_payment_id": {
+          "name": "reversal_of_payment_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "payments_org_idx": {
+          "name": "payments_org_idx",
+          "columns": [
+            {
+              "expression": "org_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        },
+        "payments_lease_idx": {
+          "name": "payments_lease_idx",
+          "columns": [
+            {
+              "expression": "lease_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        }
+      },
+      "foreignKeys": {
+        "payments_org_id_orgs_id_fk": {
+          "name": "payments_org_id_orgs_id_fk",
+          "tableFrom": "payments",
+          "columnsFrom": [
+            "org_id"
+          ],
+          "tableTo": "orgs",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        },
+        "payments_lease_id_leases_id_fk": {
+          "name": "payments_lease_id_leases_id_fk",
+          "tableFrom": "payments",
+          "columnsFrom": [
+            "lease_id"
+          ],
+          "tableTo": "leases",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.properties": {
+      "name": "properties",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "org_id": {
+          "name": "org_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "address": {
+          "name": "address",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "county": {
+          "name": "county",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "type": {
+          "name": "type",
+          "type": "property_type",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'residential'"
+        },
+        "lr_number": {
+          "name": "lr_number",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "title_ref": {
+          "name": "title_ref",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "construction_year": {
+          "name": "construction_year",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "archived_at": {
+          "name": "archived_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "properties_org_idx": {
+          "name": "properties_org_idx",
+          "columns": [
+            {
+              "expression": "org_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        }
+      },
+      "foreignKeys": {
+        "properties_org_id_orgs_id_fk": {
+          "name": "properties_org_id_orgs_id_fk",
+          "tableFrom": "properties",
+          "columnsFrom": [
+            "org_id"
+          ],
+          "tableTo": "orgs",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.receipts": {
+      "name": "receipts",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "org_id": {
+          "name": "org_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "payment_id": {
+          "name": "payment_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "token": {
+          "name": "token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "simulated": {
+          "name": "simulated",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "receipts_token_uq": {
+          "name": "receipts_token_uq",
+          "columns": [
+            {
+              "expression": "token",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        },
+        "receipts_org_idx": {
+          "name": "receipts_org_idx",
+          "columns": [
+            {
+              "expression": "org_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        }
+      },
+      "foreignKeys": {
+        "receipts_org_id_orgs_id_fk": {
+          "name": "receipts_org_id_orgs_id_fk",
+          "tableFrom": "receipts",
+          "columnsFrom": [
+            "org_id"
+          ],
+          "tableTo": "orgs",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        },
+        "receipts_payment_id_payments_id_fk": {
+          "name": "receipts_payment_id_payments_id_fk",
+          "tableFrom": "receipts",
+          "columnsFrom": [
+            "payment_id"
+          ],
+          "tableTo": "payments",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.tenant_profiles": {
+      "name": "tenant_profiles",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "org_id": {
+          "name": "org_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "phone": {
+          "name": "phone",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "id_number": {
+          "name": "id_number",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "id_document_path": {
+          "name": "id_document_path",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "kra_pin": {
+          "name": "kra_pin",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "employer": {
+          "name": "employer",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "emergency_contact_name": {
+          "name": "emergency_contact_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "emergency_contact_phone": {
+          "name": "emergency_contact_phone",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "tenant_profiles_org_idx": {
+          "name": "tenant_profiles_org_idx",
+          "columns": [
+            {
+              "expression": "org_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        },
+        "tenant_profiles_user_idx": {
+          "name": "tenant_profiles_user_idx",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        }
+      },
+      "foreignKeys": {
+        "tenant_profiles_org_id_orgs_id_fk": {
+          "name": "tenant_profiles_org_id_orgs_id_fk",
+          "tableFrom": "tenant_profiles",
+          "columnsFrom": [
+            "org_id"
+          ],
+          "tableTo": "orgs",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.units": {
+      "name": "units",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "org_id": {
+          "name": "org_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "property_id": {
+          "name": "property_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "unit_number": {
+          "name": "unit_number",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "bedrooms": {
+          "name": "bedrooms",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "rent_amount_cents": {
+          "name": "rent_amount_cents",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "unit_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'vacant'"
+        },
+        "archived_at": {
+          "name": "archived_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "units_property_number_uq": {
+          "name": "units_property_number_uq",
+          "columns": [
+            {
+              "expression": "property_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "unit_number",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        },
+        "units_org_idx": {
+          "name": "units_org_idx",
+          "columns": [
+            {
+              "expression": "org_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        }
+      },
+      "foreignKeys": {
+        "units_org_id_orgs_id_fk": {
+          "name": "units_org_id_orgs_id_fk",
+          "tableFrom": "units",
+          "columnsFrom": [
+            "org_id"
+          ],
+          "tableTo": "orgs",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        },
+        "units_property_id_properties_id_fk": {
+          "name": "units_property_id_properties_id_fk",
+          "tableFrom": "units",
+          "columnsFrom": [
+            "property_id"
+          ],
+          "tableTo": "properties",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.vendors": {
+      "name": "vendors",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "org_id": {
+          "name": "org_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "phone": {
+          "name": "phone",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "vendors_org_id_orgs_id_fk": {
+          "name": "vendors_org_id_orgs_id_fk",
+          "tableFrom": "vendors",
+          "columnsFrom": [
+            "org_id"
+          ],
+          "tableTo": "orgs",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.webhook_events": {
+      "name": "webhook_events",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "org_id": {
+          "name": "org_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "source": {
+          "name": "source",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "external_id": {
+          "name": "external_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "raw_payload": {
+          "name": "raw_payload",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "processed": {
+          "name": "processed",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "processed_at": {
+          "name": "processed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "webhook_events_source_external_uq": {
+          "name": "webhook_events_source_external_uq",
+          "columns": [
+            {
+              "expression": "source",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "external_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        }
+      },
+      "foreignKeys": {
+        "webhook_events_org_id_orgs_id_fk": {
+          "name": "webhook_events_org_id_orgs_id_fk",
+          "tableFrom": "webhook_events",
+          "columnsFrom": [
+            "org_id"
+          ],
+          "tableTo": "orgs",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {
+    "public.invoice_line_kind": {
+      "name": "invoice_line_kind",
+      "schema": "public",
+      "values": [
+        "rent",
+        "water",
+        "service_charge",
+        "garbage",
+        "deposit",
+        "late_fee",
+        "other"
+      ]
+    },
+    "public.invoice_status": {
+      "name": "invoice_status",
+      "schema": "public",
+      "values": [
+        "draft",
+        "open",
+        "partially_paid",
+        "paid",
+        "void"
+      ]
+    },
+    "public.lease_status": {
+      "name": "lease_status",
+      "schema": "public",
+      "values": [
+        "active",
+        "terminated",
+        "expired"
+      ]
+    },
+    "public.notification_channel": {
+      "name": "notification_channel",
+      "schema": "public",
+      "values": [
+        "sms",
+        "email"
+      ]
+    },
+    "public.notification_status": {
+      "name": "notification_status",
+      "schema": "public",
+      "values": [
+        "queued",
+        "sent",
+        "failed"
+      ]
+    },
+    "public.org_role": {
+      "name": "org_role",
+      "schema": "public",
+      "values": [
+        "owner",
+        "manager"
+      ]
+    },
+    "public.payment_method": {
+      "name": "payment_method",
+      "schema": "public",
+      "values": [
+        "mpesa_stk",
+        "mpesa_c2b",
+        "cash",
+        "bank",
+        "other"
+      ]
+    },
+    "public.payment_status": {
+      "name": "payment_status",
+      "schema": "public",
+      "values": [
+        "pending",
+        "confirmed",
+        "held_for_review",
+        "reversed"
+      ]
+    },
+    "public.property_type": {
+      "name": "property_type",
+      "schema": "public",
+      "values": [
+        "residential",
+        "commercial",
+        "mixed"
+      ]
+    },
+    "public.ticket_status": {
+      "name": "ticket_status",
+      "schema": "public",
+      "values": [
+        "open",
+        "assigned",
+        "in_progress",
+        "resolved",
+        "closed"
+      ]
+    },
+    "public.unit_status": {
+      "name": "unit_status",
+      "schema": "public",
+      "values": [
+        "vacant",
+        "occupied",
+        "maintenance"
+      ]
+    }
+  },
+  "schemas": {},
+  "views": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

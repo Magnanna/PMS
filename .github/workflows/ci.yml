@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: RLS coverage (every table must have a policy)
+        run: npm run check:rls
+
+      - name: Unit tests
+        run: npm test
+
+      - name: No secrets in source (Section 12 secret-hygiene check)
+        run: |
+          if grep -rE "(consumer_secret|consumerSecret|passkey)\s*=\s*['\"][A-Za-z0-9]" \
+              --include="*.ts" --include="*.tsx" src/ 2>/dev/null; then
+            echo "Possible hard-coded secret found — see Section 12 secret hygiene rule."
+            exit 1
+          fi
