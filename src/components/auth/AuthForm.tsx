@@ -141,6 +141,7 @@ export function AuthForm({ initialMode }: { initialMode: "login" | "signup" }) {
   const [rememberMe, setRememberMe] = useState(() => rememberedEmail.length > 0);
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [resetSent, setResetSent] = useState(false);
+  const [needsEmailConfirmation, setNeedsEmailConfirmation] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -188,12 +189,36 @@ export function AuthForm({ initialMode }: { initialMode: "login" | "signup" }) {
       } else if (mode === "signup") {
         const result = await signUp({ error: null }, formData);
         if (result.error) setError(result.error);
+        else if (result.needsEmailConfirmation) setNeedsEmailConfirmation(true);
       } else {
         await requestPasswordReset({ error: null }, formData);
         setResetSent(true);
       }
     });
   };
+
+  if (needsEmailConfirmation) {
+    return (
+      <div className="card p-8 max-w-sm w-full text-center space-y-3">
+        <Mail className="h-10 w-10 mx-auto text-[var(--color-accent-500)]" />
+        <h1 className="text-lg font-semibold tracking-tight">Confirm your email</h1>
+        <p className="text-sm text-[var(--color-ink-600)]">
+          Your organization was created. Click the link we just sent to verify your email,
+          then sign in.
+        </p>
+        <button
+          type="button"
+          onClick={() => {
+            setNeedsEmailConfirmation(false);
+            switchTab("login");
+          }}
+          className="btn-primary w-full px-4 py-2"
+        >
+          Back to sign in
+        </button>
+      </div>
+    );
+  }
 
   if (mode === "reset") {
     return (

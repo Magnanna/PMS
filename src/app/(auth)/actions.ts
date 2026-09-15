@@ -12,7 +12,7 @@ const signUpSchema = z.object({
   kraPin: z.string().optional(),
 });
 
-export type FormState = { error: string | null };
+export type FormState = { error: string | null; needsEmailConfirmation?: boolean };
 
 /** US-A1: signup creates the auth user, an org row, and links user as owner. */
 export async function signUp(_prev: FormState, formData: FormData): Promise<FormState> {
@@ -69,6 +69,15 @@ export async function signUp(_prev: FormState, formData: FormData): Promise<Form
 
   if (settingsError) {
     return { error: settingsError.message };
+  }
+
+  // Supabase's default project setting requires clicking an email link
+  // before a session exists — signUp() then returns no session even though
+  // the user/org were created successfully. Redirecting to /onboarding in
+  // that case just bounces back to /login via the proxy's auth guard with
+  // no explanation, so surface it here instead.
+  if (!signUpData.session) {
+    return { error: null, needsEmailConfirmation: true };
   }
 
   redirect("/onboarding");
