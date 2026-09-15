@@ -51,6 +51,7 @@ html {
 .hairline { border: 0.5px solid var(--color-ink-200); }
 .hairline-b { border-bottom: 0.5px solid var(--color-ink-200); }
 .hairline-t { border-top: 0.5px solid var(--color-ink-200); }
+.hairline-r { border-right: 0.5px solid var(--color-ink-200); }
 
 .card {
   background: white;
