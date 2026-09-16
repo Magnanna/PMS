@@ -71,6 +71,7 @@ export const paymentStatusEnum = pgEnum("payment_status", [
   "confirmed",
   "held_for_review",
   "reversed",
+  "failed", // STK push cancelled/failed at the phone — money never moved
 ]);
 export const ticketStatusEnum = pgEnum("ticket_status", [
   "open",
@@ -271,13 +272,20 @@ export const payments = pgTable(
     status: paymentStatusEnum("status").notNull().default("pending"),
     amountCents: bigint("amount_cents", { mode: "number" }).notNull(),
     mpesaReceiptNumber: text("mpesa_receipt_number"),
+    // Daraja's CheckoutRequestID, set when an STK push is initiated so the
+    // callback (which carries this same id) can find the pending row.
+    providerRequestRef: text("provider_request_ref"),
     referenceNote: text("reference_note"),
     paidAt: timestamp("paid_at", { withTimezone: true }).notNull().defaultNow(),
     // Append-only correction trail — never UPDATE a confirmed payment's amount.
     reversalOfPaymentId: uuid("reversal_of_payment_id"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [index("payments_org_idx").on(t.orgId), index("payments_lease_idx").on(t.leaseId)]
+  (t) => [
+    index("payments_org_idx").on(t.orgId),
+    index("payments_lease_idx").on(t.leaseId),
+    uniqueIndex("payments_provider_request_ref_uq").on(t.providerRequestRef),
+  ]
 );
 
 export const paymentAllocations = pgTable(
@@ -416,6 +424,9 @@ export const mpesaCredentials = pgTable(
     consumerSecretEncrypted: text("consumer_secret_encrypted").notNull(),
     passkeyEncrypted: text("passkey_encrypted"),
     environment: text("environment").notNull().default("sandbox"), // 'sandbox' | 'live'
+    // Daraja has no callback signature — a random per-org token in the
+    // callback URL is what authenticates inbound webhooks (US-C10, NFR-2).
+    webhookToken: text("webhook_token").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [uniqueIndex("mpesa_credentials_org_uq").on(t.orgId)]

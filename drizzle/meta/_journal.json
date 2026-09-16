@@ -15,6 +15,27 @@
       "when": 1789492107320,
       "tag": "0001_rls_policies",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1789540873543,
+      "tag": "0002_rls_performance",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1789540998252,
+      "tag": "0003_serious_centennial",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1789541536451,
+      "tag": "0004_daffy_korg",
+      "breakpoints": true
     }
   ]
 }

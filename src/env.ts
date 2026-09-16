@@ -13,6 +13,8 @@ const serverSchema = z.object({
   DATABASE_URL: z.string().min(1),
   ADVANTA_API_KEY: z.string().min(1).optional(),
   ADVANTA_PARTNER_ID: z.string().min(1).optional(),
+  MPESA_CREDENTIALS_ENC_KEY: z.string().min(1),
+  CRON_SECRET: z.string().min(1).optional(),
   SENTRY_DSN: z.string().url().optional(),
   SENTRY_AUTH_TOKEN: z.string().min(1).optional(),
 });
