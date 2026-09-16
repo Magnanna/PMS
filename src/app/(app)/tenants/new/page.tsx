@@ -9,7 +9,7 @@ export default function NewTenantPage() {
   const [state, formAction, pending] = useActionState(createTenant, initialState);
 
   return (
-    <main className="p-8 flex justify-center">
+    <div className="flex justify-center">
       <form action={formAction} className="card p-8 max-w-md w-full space-y-4">
         <h1 className="text-xl font-semibold tracking-tight">New tenant</h1>
 
@@ -65,6 +65,6 @@ export default function NewTenantPage() {
           {pending ? "Saving…" : "Save tenant"}
         </button>
       </form>
-    </main>
+    </div>
   );
 }

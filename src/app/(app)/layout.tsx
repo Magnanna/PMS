@@ -1,45 +1,35 @@
-import Link from "next/link";
 import { requireOrgMembership } from "@/lib/auth/session";
 import { signOut } from "@/app/(auth)/actions";
+import { AppSidebar } from "@/components/AppSidebar";
+import { db } from "@/db";
+import { orgs } from "@/db/schema";
+import { eq } from "drizzle-orm";
 
-const NAV = [
-  { href: "/dashboard", label: "Home" },
-  { href: "/properties", label: "Properties" },
-  { href: "/tenants", label: "Tenants" },
-  { href: "/leases", label: "Leases" },
-  { href: "/settings/mpesa", label: "M-Pesa" },
-];
+const ROLE_LABEL: Record<string, string> = { owner: "Owner", manager: "Manager" };
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  const { role } = await requireOrgMembership();
+  const { orgId, role } = await requireOrgMembership();
+  const [org] = await db.select({ name: orgs.name }).from(orgs).where(eq(orgs.id, orgId));
 
   return (
-    <div className="flex min-h-full">
-      <aside className="sidebar-chrome hairline-r w-56 shrink-0 p-4 flex flex-col gap-1">
-        <div className="px-2 py-2 text-sm font-semibold tracking-tight">
-          Kenya Rental PMS
-        </div>
-        <nav className="flex flex-col gap-0.5">
-          {NAV.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="rounded-md px-2 py-1.5 text-sm text-[var(--color-ink-600)] hover:bg-[var(--color-ink-100)] hover:text-[var(--color-ink-900)]"
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-        <div className="mt-auto space-y-2 px-2">
-          <div className="text-xs text-[var(--color-ink-400)] capitalize">{role}</div>
+    <div className="flex min-h-screen bg-[var(--color-ink-50)] text-[var(--color-ink-900)]">
+      <AppSidebar
+        orgName={org?.name ?? "My Business"}
+        roleLabel={ROLE_LABEL[role] ?? role}
+        onSignOut={
           <form action={signOut}>
-            <button type="submit" className="btn-secondary w-full px-3 py-1.5 text-sm">
+            <button type="submit" className="btn-secondary px-3 py-1.5 text-[12.5px]">
               Sign out
             </button>
           </form>
+        }
+      />
+      <main className="flex-1 min-w-0 flex flex-col h-screen overflow-hidden">
+        <div className="flex-1 overflow-y-auto">
+          <div className="h-[76px] md:hidden shrink-0 no-print" />
+          <div className="mx-auto max-w-6xl w-full p-4 md:p-8">{children}</div>
         </div>
-      </aside>
-      <div className="flex-1 min-w-0">{children}</div>
+      </main>
     </div>
   );
 }

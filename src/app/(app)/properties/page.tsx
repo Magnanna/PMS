@@ -5,6 +5,8 @@ import { units } from "@/db/schema";
 import { isNull, and, inArray } from "drizzle-orm";
 import { ArchiveButton } from "./archive-button";
 
+export const dynamic = "force-dynamic";
+
 export default async function PropertiesPage() {
   const props = await listProperties();
 
@@ -29,43 +31,57 @@ export default async function PropertiesPage() {
   }
 
   return (
-    <main className="p-8 space-y-6">
+    <div className="space-y-5">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold tracking-tight">Properties</h1>
-        <Link href="/properties/new" className="btn-primary px-4 py-2">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Properties</h1>
+          <p className="text-[var(--color-ink-500)] text-sm mt-1">
+            Every property in your portfolio.
+          </p>
+        </div>
+        <Link href="/properties/new" className="btn-primary px-4 py-2 text-[13px]">
           + New property
         </Link>
       </div>
 
-      {props.length === 0 ? (
-        <div className="card p-8 text-center text-[var(--color-ink-600)]">
-          No properties yet.{" "}
-          <Link href="/properties/new" className="text-[var(--color-accent-500)]">
-            Add your first property
-          </Link>
-          .
-        </div>
-      ) : (
-        <div className="card divide-y divide-[var(--color-ink-100)]">
-          {props.map((p) => (
-            <div key={p.id} className="flex items-center justify-between p-4">
-              <div>
-                <Link
-                  href={`/properties/${p.id}/units`}
-                  className="font-medium hover:text-[var(--color-accent-500)]"
-                >
-                  {p.name}
-                </Link>
-                <div className="text-sm text-[var(--color-ink-600)]">
-                  {p.address} {p.county ? `· ${p.county}` : ""} · {countByProperty.get(p.id) ?? 0} unit
-                  {(countByProperty.get(p.id) ?? 0) === 1 ? "" : "s"}
-                </div>
-              </div>
-              <ArchiveButton propertyId={p.id} />
-            </div>
-          ))}
-        </div>
-      )}
-    </main>
+      <div className="bg-white rounded-xl border border-[var(--color-ink-200)] shadow-sm overflow-hidden">
+        {props.length === 0 ? (
+          <div className="px-5 py-8 text-center text-[12.5px] text-[var(--color-ink-400)]">
+            No properties yet.{" "}
+            <Link href="/properties/new" className="text-[var(--color-accent-700)] font-medium">
+              Add your first property
+            </Link>
+            .
+          </div>
+        ) : (
+          <table className="w-full text-left text-[12.5px]">
+            <tbody className="divide-y divide-[var(--color-ink-100)]">
+              {props.map((p) => (
+                <tr key={p.id}>
+                  <td className="px-5 py-3">
+                    <Link
+                      href={`/properties/${p.id}/units`}
+                      className="font-medium hover:text-[var(--color-accent-700)]"
+                    >
+                      {p.name}
+                    </Link>
+                    <div className="text-[11px] text-[var(--color-ink-400)] mt-0.5">
+                      {p.address} {p.county ? `· ${p.county}` : ""}
+                    </div>
+                  </td>
+                  <td className="px-3 py-3 text-[var(--color-ink-400)] tnum">
+                    {countByProperty.get(p.id) ?? 0} unit
+                    {(countByProperty.get(p.id) ?? 0) === 1 ? "" : "s"}
+                  </td>
+                  <td className="px-5 py-3 text-right">
+                    <ArchiveButton propertyId={p.id} />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+    </div>
   );
 }

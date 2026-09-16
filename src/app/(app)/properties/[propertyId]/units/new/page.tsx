@@ -15,7 +15,7 @@ export default function NewUnitPage({
   const [state, formAction, pending] = useActionState(boundCreateUnit, initialState);
 
   return (
-    <main className="p-8 flex justify-center">
+    <div className="flex justify-center">
       <form action={formAction} className="card p-8 max-w-md w-full space-y-4">
         <h1 className="text-xl font-semibold tracking-tight">New unit</h1>
 
@@ -57,6 +57,6 @@ export default function NewUnitPage({
           {pending ? "Saving…" : "Save unit"}
         </button>
       </form>
-    </main>
+    </div>
   );
 }

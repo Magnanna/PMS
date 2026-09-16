@@ -6,6 +6,9 @@ import { requireOrgMembership } from "@/lib/auth/session";
 import { TerminateButton } from "./lease-actions";
 import { ChargeMpesaButton } from "./charge-mpesa-button";
 import { invoiceBalanceCents } from "@/lib/payments/allocate";
+import { Badge } from "@/components/Badge";
+
+export const dynamic = "force-dynamic";
 
 export default async function LeasesPage() {
   const { orgId } = await requireOrgMembership();
@@ -37,59 +40,75 @@ export default async function LeasesPage() {
     balances.set(lease.id, total);
   }
 
+  const statusTone = { active: "good", terminated: "neutral", expired: "neutral" } as const;
+
   return (
-    <main className="p-8 space-y-6">
+    <div className="space-y-5">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold tracking-tight">Leases</h1>
-        <Link href="/leases/new" className="btn-primary px-4 py-2">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Leases</h1>
+          <p className="text-[var(--color-ink-500)] text-sm mt-1">
+            Every tenant currently (or previously) under contract.
+          </p>
+        </div>
+        <Link href="/leases/new" className="btn-primary px-4 py-2 text-[13px]">
           + New lease
         </Link>
       </div>
 
-      {rows.length === 0 ? (
-        <div className="card p-8 text-center text-[var(--color-ink-600)]">
-          No leases yet.{" "}
-          <Link href="/leases/new" className="text-[var(--color-accent-500)]">
-            Create your first lease
-          </Link>
-          .
-        </div>
-      ) : (
-        <div className="card divide-y divide-[var(--color-ink-100)]">
-          {rows.map(({ lease, unitNumber, propertyName, tenantName }) => {
-            const balanceCents = balances.get(lease.id) ?? 0;
-            return (
-              <div key={lease.id} className="flex items-center justify-between p-4">
-                <div>
-                  <div className="font-medium">
-                    {tenantName} · {propertyName} / {unitNumber}
-                    {lease.controlledTenancy && (
-                      <span className="ml-2 text-xs text-[var(--color-warn)]">
-                        controlled tenancy
-                      </span>
-                    )}
-                  </div>
-                  <div className="text-sm text-[var(--color-ink-600)] tnum">
-                    KES {(lease.rentAmountCents / 100).toLocaleString()}/mo · billing day{" "}
-                    {lease.billingDay} · <span className="capitalize">{lease.status}</span>
-                    {lease.status === "active" && balanceCents > 0 && (
-                      <span className="ml-2" style={{ color: "var(--color-bad)" }}>
-                        KES {(balanceCents / 100).toLocaleString()} due
-                      </span>
-                    )}
-                  </div>
-                </div>
-                {lease.status === "active" && (
-                  <div className="flex items-center gap-2">
-                    {balanceCents > 0 && <ChargeMpesaButton leaseId={lease.id} />}
-                    <TerminateButton leaseId={lease.id} />
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      )}
-    </main>
+      <div className="bg-white rounded-xl border border-[var(--color-ink-200)] shadow-sm overflow-hidden">
+        {rows.length === 0 ? (
+          <div className="px-5 py-8 text-center text-[12.5px] text-[var(--color-ink-400)]">
+            No leases yet.{" "}
+            <Link href="/leases/new" className="text-[var(--color-accent-700)] font-medium">
+              Create your first lease
+            </Link>
+            .
+          </div>
+        ) : (
+          <table className="w-full text-left text-[12.5px]">
+            <tbody className="divide-y divide-[var(--color-ink-100)]">
+              {rows.map(({ lease, unitNumber, propertyName, tenantName }) => {
+                const balanceCents = balances.get(lease.id) ?? 0;
+                return (
+                  <tr key={lease.id}>
+                    <td className="px-5 py-3">
+                      <div className="font-medium">
+                        {tenantName} · {propertyName} / {unitNumber}
+                      </div>
+                      <div className="text-[11px] text-[var(--color-ink-400)] tnum mt-0.5">
+                        KES {(lease.rentAmountCents / 100).toLocaleString()}/mo · billing day{" "}
+                        {lease.billingDay}
+                      </div>
+                    </td>
+                    <td className="px-3 py-3">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <Badge tone={statusTone[lease.status]}>{lease.status}</Badge>
+                        {lease.controlledTenancy && <Badge tone="warn">controlled tenancy</Badge>}
+                      </div>
+                    </td>
+                    <td className="px-3 py-3 text-right tnum">
+                      {lease.status === "active" && balanceCents > 0 && (
+                        <span className="text-[var(--color-bad)] font-medium">
+                          KES {(balanceCents / 100).toLocaleString()} due
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-5 py-3">
+                      {lease.status === "active" && (
+                        <div className="flex items-center justify-end gap-2">
+                          {balanceCents > 0 && <ChargeMpesaButton leaseId={lease.id} />}
+                          <TerminateButton leaseId={lease.id} />
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
+      </div>
+    </div>
   );
 }

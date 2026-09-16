@@ -2,7 +2,10 @@ import { requireOrgMembership } from "@/lib/auth/session";
 import { db } from "@/db";
 import { properties, units, leases, payments } from "@/db/schema";
 import { eq, and, isNull, gte } from "drizzle-orm";
+import { StatCard } from "@/components/StatCard";
 import { GenerateInvoicesButton } from "./generate-invoices-button";
+
+export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
   const { orgId } = await requireOrgMembership();
@@ -38,39 +41,46 @@ export default async function DashboardPage() {
   );
 
   return (
-    <main className="p-8 space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold tracking-tight">Home</h1>
-        <GenerateInvoicesButton />
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <div className="card p-5">
-          <div className="text-sm text-[var(--color-ink-600)]">Rent collected this month</div>
-          <div className="money-lg stat-figure tnum">
-            KES {(rentCollectedCents / 100).toLocaleString()}
-          </div>
+    <div className="space-y-5">
+      <div className="flex items-end justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Home</h1>
+          <p className="text-[var(--color-ink-500)] text-sm mt-1">
+            Rent collection and portfolio status.
+          </p>
         </div>
-        <div className="card p-5">
-          <div className="text-sm text-[var(--color-ink-600)]">Properties</div>
-          <div className="money-lg stat-figure">{propertyCount}</div>
-        </div>
-        <div className="card p-5">
-          <div className="text-sm text-[var(--color-ink-600)]">Vacant units</div>
-          <div className="money-lg stat-figure">
-            {vacantCount} / {unitRows.length}
-          </div>
-        </div>
-        <div className="card p-5">
-          <div className="text-sm text-[var(--color-ink-600)]">Active leases</div>
-          <div className="money-lg stat-figure">{activeLeaseCount}</div>
+        <div className="flex items-center gap-3 shrink-0">
+          <span className="text-[11.5px] text-[var(--color-ink-400)] pb-1">
+            {new Date().toLocaleDateString("en-KE", {
+              weekday: "long",
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+            })}
+          </span>
+          <GenerateInvoicesButton />
         </div>
       </div>
 
-      <p className="text-sm text-[var(--color-ink-400)]">
-        Arrears aging and MRI tax figures land in later stories — this dashboard covers
-        what M1/M2 have shipped so far (structure + M-Pesa collection).
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard
+          label="Rent collected this month"
+          value={`KES ${(rentCollectedCents / 100).toLocaleString()}`}
+        />
+        <StatCard label="Properties" value={String(propertyCount)} />
+        <StatCard
+          label="Vacant units"
+          value={`${vacantCount} / ${unitRows.length}`}
+          sub={vacantCount > 0 ? `${vacantCount} unit${vacantCount === 1 ? "" : "s"} to fill` : "fully occupied"}
+          subTone={vacantCount > 0 ? "muted" : "good"}
+        />
+        <StatCard label="Active leases" value={String(activeLeaseCount)} />
+      </div>
+
+      <p className="text-[11.5px] text-[var(--color-ink-400)]">
+        Arrears aging and MRI tax figures land in later stories — this dashboard covers what
+        M1/M2 have shipped so far (structure + M-Pesa collection).
       </p>
-    </main>
+    </div>
   );
 }

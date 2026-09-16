@@ -9,7 +9,7 @@ export default function NewPropertyPage() {
   const [state, formAction, pending] = useActionState(createProperty, initialState);
 
   return (
-    <main className="p-8 flex justify-center">
+    <div className="flex justify-center">
       <form action={formAction} className="card p-8 max-w-md w-full space-y-4">
         <h1 className="text-xl font-semibold tracking-tight">New property</h1>
 
@@ -43,6 +43,6 @@ export default function NewPropertyPage() {
           {pending ? "Saving…" : "Save property"}
         </button>
       </form>
-    </main>
+    </div>
   );
 }

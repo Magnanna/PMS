@@ -24,8 +24,8 @@ export default async function NewLeasePage() {
     .where(eq(tenantProfiles.orgId, orgId));
 
   return (
-    <main className="p-8 flex justify-center">
+    <div className="flex justify-center">
       <NewLeaseForm vacantUnits={vacantUnits} tenants={tenants} />
-    </main>
+    </div>
   );
 }

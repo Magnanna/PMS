@@ -5,7 +5,7 @@ export default async function MpesaSettingsPage() {
   const summary = await getMpesaCredentialsSummary();
 
   return (
-    <main className="p-8 flex justify-center">
+    <div className="flex justify-center">
       <div className="max-w-md w-full space-y-6">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">M-Pesa</h1>
@@ -37,6 +37,6 @@ export default async function MpesaSettingsPage() {
 
         <MpesaSettingsForm />
       </div>
-    </main>
+    </div>
   );
 }
