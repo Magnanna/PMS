@@ -36,6 +36,13 @@
       "when": 1789541536451,
       "tag": "0004_daffy_korg",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1789546651628,
+      "tag": "0005_illegal_doctor_spectrum",
+      "breakpoints": true
     }
   ]
 }

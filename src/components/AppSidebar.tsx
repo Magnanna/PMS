@@ -29,7 +29,14 @@ const groups: { label: string | null; items: { href: string; label: string; icon
   },
   {
     label: "Money",
-    items: [{ href: "/settings/mpesa", label: "M-Pesa", icon: "💸" }],
+    items: [
+      { href: "/settings/mpesa", label: "M-Pesa", icon: "💸" },
+      { href: "/reports/mri", label: "MRI Tax", icon: "🧾" },
+    ],
+  },
+  {
+    label: "Organization",
+    items: [{ href: "/settings/org", label: "Settings", icon: "⚙️" }],
   },
 ];
 

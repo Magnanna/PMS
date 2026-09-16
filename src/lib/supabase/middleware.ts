@@ -38,6 +38,7 @@ export async function updateSession(request: NextRequest) {
     isAuthRoute ||
     request.nextUrl.pathname === "/" ||
     request.nextUrl.pathname.startsWith("/pay/") || // US-H3 public pay links
+    request.nextUrl.pathname.startsWith("/r/") || // public receipt view (US-D1)
     request.nextUrl.pathname.startsWith("/api/");
 
   if (!user && !isPublicRoute) {

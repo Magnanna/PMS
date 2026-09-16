@@ -347,8 +347,10 @@ export const receipts = pgTable(
     id: uuid("id").primaryKey().defaultRandom(),
     orgId: uuid("org_id").notNull().references(() => orgs.id),
     paymentId: uuid("payment_id").notNull().references(() => payments.id),
-    token: text("token").notNull(), // QR verification token (receipts/tokens.ts)
+    token: text("token").notNull(), // QR verification token — resolves to /r/[token]
     simulated: boolean("simulated").notNull().default(true), // eTIMS watermark flag, US-D1
+    cuInvoiceNumber: text("cu_invoice_number"), // simulated eTIMS control-unit invoice number
+    cuSerial: text("cu_serial"), // simulated control-unit serial
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [uniqueIndex("receipts_token_uq").on(t.token), index("receipts_org_idx").on(t.orgId)]

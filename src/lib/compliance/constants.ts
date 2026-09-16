@@ -6,20 +6,26 @@
  * every Finance Act (OQ-2).
  */
 
-export const DEFAULT_COMPLIANCE_CONSTANTS = {
-  /** MRI = Monthly Rental Income tax. 7.5% retained by Finance Act 2025. */
-  MRI_RATE_PCT: 7.5,
+export type ComplianceConstants = {
+  /** MRI = Monthly Rental Income tax rate, percent. */
+  MRI_RATE_PCT: number;
   /** Historically the ~monthly gross-rent entry threshold; draft RRI Regs
    *  (22 Mar 2026) propose this as an ANNUAL figure instead. Verify before
    *  filing use — see OQ-2 in the PRD. */
-  MRI_ENTRY_THRESHOLD_KES: 288_000,
+  MRI_ENTRY_THRESHOLD_KES: number;
   /** Rent Restriction Act (Cap 304) controlled-tenancy cap, KES/month. */
-  CONTROLLED_TENANCY_CAP_KES: 2_500,
+  CONTROLLED_TENANCY_CAP_KES: number;
   /** MRI return + payment due day of the month following collection. */
-  MRI_DUE_DAY_OF_MONTH: 20,
-} as const;
+  MRI_DUE_DAY_OF_MONTH: number;
+};
 
-export type ComplianceConstants = typeof DEFAULT_COMPLIANCE_CONSTANTS;
+export const DEFAULT_COMPLIANCE_CONSTANTS: ComplianceConstants = {
+  // 7.5% retained by Finance Act 2025 (proposed 10% dropped).
+  MRI_RATE_PCT: 7.5,
+  MRI_ENTRY_THRESHOLD_KES: 288_000,
+  CONTROLLED_TENANCY_CAP_KES: 2_500,
+  MRI_DUE_DAY_OF_MONTH: 20,
+};
 
 /**
  * Merge an org's overrides (orgs.complianceOverrides, nullable jsonb) over

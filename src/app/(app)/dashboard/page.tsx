@@ -1,20 +1,23 @@
+import Link from "next/link";
 import { requireOrgMembership } from "@/lib/auth/session";
 import { db } from "@/db";
 import { properties, units, leases, payments } from "@/db/schema";
 import { eq, and, isNull, gte } from "drizzle-orm";
 import { StatCard } from "@/components/StatCard";
 import { GenerateInvoicesButton } from "./generate-invoices-button";
+import { computeMriTax } from "@/lib/compliance/mri-tax";
 
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
   const { orgId } = await requireOrgMembership();
 
+  const now = new Date();
   const monthStart = new Date();
   monthStart.setUTCDate(1);
   monthStart.setUTCHours(0, 0, 0, 0);
 
-  const [propertyCount, unitRows, activeLeaseCount, confirmedPaymentsThisMonth] =
+  const [propertyCount, unitRows, activeLeaseCount, confirmedPaymentsThisMonth, mriTax] =
     await Promise.all([
       db.$count(properties, and(eq(properties.orgId, orgId), isNull(properties.archivedAt))),
       db
@@ -32,6 +35,7 @@ export default async function DashboardPage() {
             gte(payments.paidAt, monthStart)
           )
         ),
+      computeMriTax(orgId, now.getUTCFullYear(), now.getUTCMonth() + 1),
     ]);
 
   const vacantCount = unitRows.filter((u) => u.status === "vacant").length;
@@ -77,9 +81,23 @@ export default async function DashboardPage() {
         <StatCard label="Active leases" value={String(activeLeaseCount)} />
       </div>
 
+      <Link href="/reports/mri" className="block">
+        <StatCard
+          label={`MRI tax due (${mriTax.periodLabel}, ${mriTax.ratePct}%)`}
+          value={`KES ${(mriTax.taxDueCents / 100).toLocaleString()}`}
+          sub={
+            mriTax.belowThreshold
+              ? "below entry threshold — verify before filing"
+              : "due by the 20th of next month · view summary"
+          }
+          subTone={mriTax.belowThreshold ? "muted" : "bad"}
+        />
+      </Link>
+
       <p className="text-[11.5px] text-[var(--color-ink-400)]">
-        Arrears aging and MRI tax figures land in later stories — this dashboard covers what
-        M1/M2 have shipped so far (structure + M-Pesa collection).
+        Arrears aging lands in a later story. MRI tax is computed from your records under the
+        rules configured in compliance/constants.ts — confirm current KRA rates before filing.
+        Not tax advice.
       </p>
     </div>
   );

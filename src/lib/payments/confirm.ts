@@ -2,10 +2,11 @@ import "server-only";
 import crypto from "crypto";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
-import { payments, receipts, leases, units } from "@/db/schema";
+import { payments, receipts, leases, units, orgs, tenantProfiles } from "@/db/schema";
 import { allocateOldestFirst } from "./allocate";
 import { postJournalEntry, type JournalLineInput } from "@/lib/ledger/posting";
 import { ACCOUNTS, cashAccountForMethod } from "@/lib/ledger/accounts";
+import { getTaxDevice } from "@/lib/receipts/etims";
 
 /**
  * Orchestrates what happens once a payment is confirmed (M-Pesa callback,
@@ -70,11 +71,29 @@ export async function confirmPayment(paymentId: string): Promise<void> {
     lines,
   });
 
+  const [org] = await db.select().from(orgs).where(eq(orgs.id, payment.orgId));
+  const [tenant] = await db
+    .select()
+    .from(tenantProfiles)
+    .where(eq(tenantProfiles.id, lease.tenantProfileId));
+
+  const device = getTaxDevice();
+  const signed = device.sign({
+    sellerPin: org?.kraPin ?? "",
+    buyerPin: tenant?.kraPin,
+    invoiceNumber: payment.id,
+    totalCents: payment.amountCents,
+    taxCents: 0, // MRI is a landlord withholding tax, not a line-item tax on the rent receipt
+    dateISO: new Date().toISOString(),
+  });
+
   await db.insert(receipts).values({
     orgId: payment.orgId,
     paymentId: payment.id,
     token: crypto.randomBytes(16).toString("hex"),
-    simulated: true, // real eTIMS adapter lands with US-D1 (M3)
+    simulated: true, // real eTIMS adapter is a hard requirement before production filing use
+    cuInvoiceNumber: signed.cuInvoiceNumber,
+    cuSerial: signed.cuSerial,
   });
 
   await db.update(payments).set({ status: "confirmed" }).where(eq(payments.id, payment.id));
