@@ -26,6 +26,7 @@ const groups: { label: string | null; items: { href: string; label: string; icon
       { href: "/tenants", label: "Tenants", icon: "👥" },
       { href: "/leases", label: "Leases", icon: "📄" },
       { href: "/maintenance", label: "Maintenance", icon: "🔧" },
+      { href: "/import", label: "Import", icon: "📥" },
     ],
   },
   {
@@ -39,7 +40,10 @@ const groups: { label: string | null; items: { href: string; label: string; icon
   },
   {
     label: "Organization",
-    items: [{ href: "/settings/org", label: "Settings", icon: "⚙️" }],
+    items: [
+      { href: "/settings/org", label: "Settings", icon: "⚙️" },
+      { href: "/settings/audit", label: "Audit Log", icon: "📜" },
+    ],
   },
 ];
 

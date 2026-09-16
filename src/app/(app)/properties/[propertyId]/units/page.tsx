@@ -79,7 +79,9 @@ export default async function UnitsPage({
                   <td className="px-5 py-3">
                     <div className="font-medium">Unit {u.unitNumber}</div>
                     <div className="text-[11px] text-[var(--color-ink-400)] tnum mt-0.5">
-                      {u.bedrooms != null ? `${u.bedrooms} bd · ` : ""}
+                      {u.bedrooms != null && `${u.bedrooms} bd · `}
+                      {u.commercialUnitType && `${u.commercialUnitType} · `}
+                      {u.floorAreaSqft != null && `${u.floorAreaSqft} sqft · `}
                       KES {(u.rentAmountCents / 100).toLocaleString()}/mo
                     </div>
                   </td>

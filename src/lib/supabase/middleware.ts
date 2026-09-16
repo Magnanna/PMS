@@ -40,6 +40,7 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname.startsWith("/pay/") || // US-H3 public pay links
     request.nextUrl.pathname.startsWith("/r/") || // public receipt view (US-D1)
     request.nextUrl.pathname.startsWith("/tenant/claim/") || // tenant portal invite (US-A4)
+    request.nextUrl.pathname.startsWith("/statement/") || // public statement view (US-G4)
     request.nextUrl.pathname.startsWith("/api/");
 
   if (!user && !isPublicRoute) {

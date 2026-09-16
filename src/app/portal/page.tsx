@@ -5,6 +5,7 @@ import { leases, units, properties, orgs, invoices } from "@/db/schema";
 import { and, eq, inArray } from "drizzle-orm";
 import { invoiceBalanceCents } from "@/lib/payments/allocate";
 import { Badge } from "@/components/Badge";
+import { createStatementToken } from "@/lib/reports/statement-link";
 
 export const dynamic = "force-dynamic";
 
@@ -90,12 +91,20 @@ export default async function PortalPage() {
             )}
           </div>
 
-          <Link
-            href={`/portal/receipts?tenant=${profile.id}`}
-            className="btn-secondary block text-center px-4 py-2 text-[13px]"
-          >
-            View receipts
-          </Link>
+          <div className="flex gap-2">
+            <Link
+              href={`/portal/receipts?tenant=${profile.id}`}
+              className="btn-secondary flex-1 text-center px-4 py-2 text-[13px]"
+            >
+              Receipts
+            </Link>
+            <Link
+              href={`/statement/${createStatementToken(lease.id)}`}
+              className="btn-secondary flex-1 text-center px-4 py-2 text-[13px]"
+            >
+              Statement
+            </Link>
+          </div>
         </div>
       ))}
     </div>

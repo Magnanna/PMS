@@ -9,6 +9,7 @@ import { leases, units, orgs } from "@/db/schema";
 import { requireOrgMembership } from "@/lib/auth/session";
 import { assertCan } from "@/lib/auth/permissions";
 import { resolveComplianceConstants } from "@/lib/compliance/constants";
+import { logAudit } from "@/lib/audit/log";
 
 const leaseSchema = z.object({
   unitId: z.string().uuid(),
@@ -26,7 +27,7 @@ export type FormState = { error: string | null };
 
 /** US-B4: create a lease. Guards: unit has no active lease; billing day 1–28. */
 export async function createLease(_prev: FormState, formData: FormData): Promise<FormState> {
-  const { orgId, role } = await requireOrgMembership();
+  const { orgId, role, userId } = await requireOrgMembership();
   assertCan(role, "lease:write");
 
   const parsed = leaseSchema.safeParse({
@@ -65,22 +66,35 @@ export async function createLease(_prev: FormState, formData: FormData): Promise
   const rentAmountCents = Math.round(parsed.data.rentAmountKes * 100);
   const controlledTenancy = parsed.data.rentAmountKes <= constants.CONTROLLED_TENANCY_CAP_KES;
 
-  await db.insert(leases).values({
-    orgId,
-    unitId,
-    tenantProfileId: parsed.data.tenantProfileId,
-    startDate: parsed.data.startDate,
-    endDate: parsed.data.endDate || null,
-    rentAmountCents,
-    depositAmountCents: Math.round(parsed.data.depositAmountKes * 100),
-    billingDay: parsed.data.billingDay,
-    controlledTenancy,
-    guarantorName: parsed.data.guarantorName || null,
-    guarantorPhone: parsed.data.guarantorPhone || null,
-    status: "active",
-  });
+  const [newLease] = await db
+    .insert(leases)
+    .values({
+      orgId,
+      unitId,
+      tenantProfileId: parsed.data.tenantProfileId,
+      startDate: parsed.data.startDate,
+      endDate: parsed.data.endDate || null,
+      rentAmountCents,
+      depositAmountCents: Math.round(parsed.data.depositAmountKes * 100),
+      billingDay: parsed.data.billingDay,
+      controlledTenancy,
+      guarantorName: parsed.data.guarantorName || null,
+      guarantorPhone: parsed.data.guarantorPhone || null,
+      status: "active",
+    })
+    .returning({ id: leases.id });
 
   await db.update(units).set({ status: "occupied" }).where(eq(units.id, unitId));
+
+  await logAudit({
+    orgId,
+    actorUserId: userId,
+    actorRole: role,
+    action: "lease.created",
+    entityType: "lease",
+    entityId: newLease.id,
+    after: { unitId, rentAmountCents, controlledTenancy },
+  });
 
   revalidatePath("/leases");
   revalidatePath("/properties");
@@ -92,7 +106,7 @@ export async function terminateLease(
   leaseId: string,
   reason: string
 ): Promise<{ error: string | null }> {
-  const { orgId, role } = await requireOrgMembership();
+  const { orgId, role, userId } = await requireOrgMembership();
   assertCan(role, "lease:write");
 
   const [lease] = await db
@@ -112,6 +126,17 @@ export async function terminateLease(
     .where(eq(leases.id, leaseId));
 
   await db.update(units).set({ status: "vacant" }).where(eq(units.id, lease.unitId));
+
+  await logAudit({
+    orgId,
+    actorUserId: userId,
+    actorRole: role,
+    action: "lease.terminated",
+    entityType: "lease",
+    entityId: leaseId,
+    before: { status: lease.status },
+    after: { status: "terminated", reason },
+  });
 
   revalidatePath("/leases");
   revalidatePath("/properties");

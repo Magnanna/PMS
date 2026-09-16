@@ -10,6 +10,7 @@ import { requireOrgMembership } from "@/lib/auth/session";
 import { assertCan } from "@/lib/auth/permissions";
 import { encryptSecret } from "@/lib/payments/crypto";
 import { testMpesaConnection } from "@/lib/payments/mpesaDaraja";
+import { logAudit } from "@/lib/audit/log";
 
 const credentialsSchema = z.object({
   shortcodeType: z.enum(["paybill", "till"]),
@@ -29,7 +30,7 @@ export async function saveMpesaCredentials(
   _prev: FormState,
   formData: FormData
 ): Promise<FormState> {
-  const { orgId, role } = await requireOrgMembership();
+  const { orgId, role, userId } = await requireOrgMembership();
   assertCan(role, "org:manage_mpesa_credentials");
 
   const parsed = credentialsSchema.safeParse({
@@ -66,6 +67,16 @@ export async function saveMpesaCredentials(
   } else {
     await db.insert(mpesaCredentials).values(values);
   }
+
+  // Log that credentials changed — never the credentials themselves.
+  await logAudit({
+    orgId,
+    actorUserId: userId,
+    actorRole: role,
+    action: existing ? "mpesa_credentials.updated" : "mpesa_credentials.connected",
+    entityType: "mpesa_credentials",
+    after: { shortcodeType: parsed.data.shortcodeType, environment: parsed.data.environment },
+  });
 
   revalidatePath("/settings/mpesa");
   return { error: null, success: true };

@@ -166,7 +166,13 @@ export const units = pgTable(
     orgId: uuid("org_id").notNull().references(() => orgs.id),
     propertyId: uuid("property_id").notNull().references(() => properties.id),
     unitNumber: text("unit_number").notNull(),
+    // Residential-only field — null for commercial units (US-B2 property-
+    // type-aware form: a commercial unit asks floor area/commercial type
+    // instead of bedrooms, never both sets of questions at once).
     bedrooms: integer("bedrooms"),
+    // Commercial-only fields — null for residential units.
+    floorAreaSqft: integer("floor_area_sqft"),
+    commercialUnitType: text("commercial_unit_type"), // 'office' | 'shop' | 'warehouse' | 'other'
     rentAmountCents: bigint("rent_amount_cents", { mode: "number" }).notNull(),
     status: unitStatusEnum("status").notNull().default("vacant"),
     archivedAt: timestamp("archived_at", { withTimezone: true }),

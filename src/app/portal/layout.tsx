@@ -13,6 +13,12 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
           <Link href="/portal/maintenance" className="text-[12.5px] text-[var(--color-ink-600)]">
             Maintenance
           </Link>
+          <a
+            href="/api/portal/export-data"
+            className="text-[12.5px] text-[var(--color-ink-600)]"
+          >
+            My data
+          </a>
           <form action={signOut}>
             <button type="submit" className="text-[12.5px] text-[var(--color-ink-600)]">
               Sign out

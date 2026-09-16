@@ -8,6 +8,7 @@ import { db } from "@/db";
 import { properties, units, leases } from "@/db/schema";
 import { requireOrgMembership } from "@/lib/auth/session";
 import { assertCan } from "@/lib/auth/permissions";
+import { logAudit } from "@/lib/audit/log";
 
 const propertySchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -41,7 +42,7 @@ export async function createProperty(_prev: FormState, formData: FormData): Prom
 
 /** US-B1: archive is blocked while any unit under the property has an active lease. */
 export async function archiveProperty(propertyId: string): Promise<{ error: string | null }> {
-  const { orgId, role } = await requireOrgMembership();
+  const { orgId, role, userId } = await requireOrgMembership();
   assertCan(role, "property:write");
 
   const propertyUnitIds = (
@@ -71,6 +72,15 @@ export async function archiveProperty(propertyId: string): Promise<{ error: stri
     .update(properties)
     .set({ archivedAt: new Date() })
     .where(and(eq(properties.id, propertyId), eq(properties.orgId, orgId)));
+
+  await logAudit({
+    orgId,
+    actorUserId: userId,
+    actorRole: role,
+    action: "property.archived",
+    entityType: "property",
+    entityId: propertyId,
+  });
 
   revalidatePath("/properties");
   return { error: null };

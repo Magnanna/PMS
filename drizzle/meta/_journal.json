@@ -43,6 +43,13 @@
       "when": 1789546651628,
       "tag": "0005_illegal_doctor_spectrum",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1789564035319,
+      "tag": "0006_jazzy_madame_hydra",
+      "breakpoints": true
     }
   ]
 }
