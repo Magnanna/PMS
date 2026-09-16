@@ -25,6 +25,7 @@ const groups: { label: string | null; items: { href: string; label: string; icon
       { href: "/properties", label: "Properties", icon: "🏢" },
       { href: "/tenants", label: "Tenants", icon: "👥" },
       { href: "/leases", label: "Leases", icon: "📄" },
+      { href: "/maintenance", label: "Maintenance", icon: "🔧" },
     ],
   },
   {
@@ -32,6 +33,8 @@ const groups: { label: string | null; items: { href: string; label: string; icon
     items: [
       { href: "/settings/mpesa", label: "M-Pesa", icon: "💸" },
       { href: "/reports/mri", label: "MRI Tax", icon: "🧾" },
+      { href: "/reports/pnl", label: "Profit & Loss", icon: "📈" },
+      { href: "/reports/rent-roll", label: "Rent Roll", icon: "📋" },
     ],
   },
   {

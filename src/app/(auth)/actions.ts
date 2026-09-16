@@ -2,8 +2,11 @@
 
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import { eq } from "drizzle-orm";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { db } from "@/db";
+import { orgMembers, tenantProfiles } from "@/db/schema";
 
 const signUpSchema = z.object({
   orgName: z.string().min(2, "Org name is required"),
@@ -99,13 +102,38 @@ export async function signIn(_prev: FormState, formData: FormData): Promise<Form
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword(parsed.data);
+  const { data, error } = await supabase.auth.signInWithPassword(parsed.data);
 
-  if (error) {
-    return { error: error.message };
+  if (error || !data.user) {
+    return { error: error?.message ?? "Sign in failed" };
   }
 
-  redirect("/dashboard");
+  // A person can be an org member (landlord/staff), a tenant, or — in
+  // principle, though not a flow we build toward — neither yet. Route by
+  // what they actually are rather than assuming everyone is landlord
+  // staff, which used to send tenants straight to the landlord dashboard's
+  // org-membership guard and bounce them to onboarding.
+  const [membership] = await db
+    .select({ orgId: orgMembers.orgId })
+    .from(orgMembers)
+    .where(eq(orgMembers.userId, data.user.id))
+    .limit(1);
+
+  if (membership) {
+    redirect("/dashboard");
+  }
+
+  const [tenantProfile] = await db
+    .select({ id: tenantProfiles.id })
+    .from(tenantProfiles)
+    .where(eq(tenantProfiles.userId, data.user.id))
+    .limit(1);
+
+  if (tenantProfile) {
+    redirect("/portal");
+  }
+
+  redirect("/onboarding");
 }
 
 const resetSchema = z.object({ email: z.string().email() });
