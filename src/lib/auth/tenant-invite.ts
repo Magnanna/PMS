@@ -1,6 +1,6 @@
 import "server-only";
-import crypto from "crypto";
 import { env } from "@/env";
+import { createSignedToken, verifySignedToken } from "@/lib/security/signed-token";
 
 /**
  * US-A4: signed, expiring, single-tenant-profile invite token — same
@@ -10,37 +10,13 @@ import { env } from "@/env";
  */
 const TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
-function sign(payload: string): string {
-  return crypto.createHmac("sha256", env.MPESA_CREDENTIALS_ENC_KEY).update(payload).digest("base64url");
-}
-
 export function createTenantInviteToken(tenantProfileId: string): string {
-  const expiresAt = Date.now() + TTL_MS;
-  const payload = `${tenantProfileId}.${expiresAt}`;
-  return Buffer.from(`${payload}.${sign(payload)}`).toString("base64url");
+  return createSignedToken(tenantProfileId, TTL_MS, env.MPESA_CREDENTIALS_ENC_KEY);
 }
 
 export function verifyTenantInviteToken(token: string): { tenantProfileId: string } | null {
-  try {
-    const decoded = Buffer.from(token, "base64url").toString("utf8");
-    const parts = decoded.split(".");
-    if (parts.length !== 3) return null;
-    const [tenantProfileId, expiresAtStr, sig] = parts;
-
-    const expected = sign(`${tenantProfileId}.${expiresAtStr}`);
-    const sigBuf = Buffer.from(sig);
-    const expectedBuf = Buffer.from(expected);
-    if (sigBuf.length !== expectedBuf.length || !crypto.timingSafeEqual(sigBuf, expectedBuf)) {
-      return null;
-    }
-
-    const expiresAt = Number(expiresAtStr);
-    if (!Number.isFinite(expiresAt) || Date.now() > expiresAt) return null;
-
-    return { tenantProfileId };
-  } catch {
-    return null;
-  }
+  const tenantProfileId = verifySignedToken(token, env.MPESA_CREDENTIALS_ENC_KEY);
+  return tenantProfileId ? { tenantProfileId } : null;
 }
 
 export function tenantInviteUrl(token: string): string {
