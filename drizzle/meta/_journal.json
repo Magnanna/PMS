@@ -50,6 +50,13 @@
       "when": 1789564035319,
       "tag": "0006_jazzy_madame_hydra",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1789585889572,
+      "tag": "0007_cute_abomination",
+      "breakpoints": true
     }
   ]
 }

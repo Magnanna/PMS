@@ -101,6 +101,11 @@ export const orgs = pgTable("orgs", {
   plan: text("plan").notNull().default("free"), // OQ-1 monetization stub
   // Per-org overrides of Section 3 compliance constants; null = use platform default.
   complianceOverrides: jsonb("compliance_overrides"),
+  // US-J3: platform admin can suspend an org for abuse; blocks org-member
+  // login into (app) but NOT platform-admin impersonation (support needs
+  // to get in to investigate a suspended org).
+  suspended: boolean("suspended").notNull().default(false),
+  suspendedReason: text("suspended_reason"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
@@ -472,6 +477,36 @@ export const auditLogs = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [index("audit_logs_org_idx").on(t.orgId)]
+);
+
+// ---------- Platform admin (Epic J, US-J3) ----------
+
+// Separate auth realm from org_members/tenant_profiles: a row here grants
+// staff access to /platform, independent of any org membership.
+export const platformAdmins = pgTable("platform_admins", {
+  userId: uuid("user_id").primaryKey(), // auth.users.id
+  role: text("role").notNull().default("staff"), // 'staff' | 'superadmin'
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+// Time-boxed, consent-logged support sessions (US-J3: "no silent
+// impersonation"). The session cookie itself is a stateless signed token
+// (src/lib/security/signed-token.ts) carrying this row's id; this row is
+// what makes it revocable/auditable/consent-tracked, unlike the pure
+// pay-link/tenant-invite tokens.
+export const impersonationSessions = pgTable(
+  "impersonation_sessions",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    platformAdminUserId: uuid("platform_admin_user_id").notNull(),
+    targetOrgId: uuid("target_org_id").notNull().references(() => orgs.id),
+    reason: text("reason").notNull(),
+    consentAt: timestamp("consent_at", { withTimezone: true }).notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    endedAt: timestamp("ended_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("impersonation_sessions_org_idx").on(t.targetOrgId)]
 );
 
 // ---------- Org settings ----------

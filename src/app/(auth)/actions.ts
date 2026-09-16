@@ -6,7 +6,7 @@ import { eq } from "drizzle-orm";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { db } from "@/db";
-import { orgMembers, tenantProfiles } from "@/db/schema";
+import { orgMembers, tenantProfiles, platformAdmins } from "@/db/schema";
 
 const signUpSchema = z.object({
   orgName: z.string().min(2, "Org name is required"),
@@ -106,6 +106,18 @@ export async function signIn(_prev: FormState, formData: FormData): Promise<Form
 
   if (error || !data.user) {
     return { error: error?.message ?? "Sign in failed" };
+  }
+
+  // Platform staff (US-J3) checked first — a platform admin normally has no
+  // org membership at all, and would otherwise fall through to /onboarding.
+  const [platformAdmin] = await db
+    .select({ userId: platformAdmins.userId })
+    .from(platformAdmins)
+    .where(eq(platformAdmins.userId, data.user.id))
+    .limit(1);
+
+  if (platformAdmin) {
+    redirect("/platform");
   }
 
   // A person can be an org member (landlord/staff), a tenant, or — in
