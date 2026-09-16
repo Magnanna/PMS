@@ -7,6 +7,8 @@ import { allocateOldestFirst } from "./allocate";
 import { postJournalEntry, type JournalLineInput } from "@/lib/ledger/posting";
 import { ACCOUNTS, cashAccountForMethod } from "@/lib/ledger/accounts";
 import { getTaxDevice } from "@/lib/receipts/etims";
+import { sendTenantSms } from "@/lib/notifications/sms";
+import { env } from "@/env";
 
 /**
  * Orchestrates what happens once a payment is confirmed (M-Pesa callback,
@@ -87,14 +89,31 @@ export async function confirmPayment(paymentId: string): Promise<void> {
     dateISO: new Date().toISOString(),
   });
 
+  const receiptToken = crypto.randomBytes(16).toString("hex");
+
   await db.insert(receipts).values({
     orgId: payment.orgId,
     paymentId: payment.id,
-    token: crypto.randomBytes(16).toString("hex"),
+    token: receiptToken,
     simulated: true, // real eTIMS adapter is a hard requirement before production filing use
     cuInvoiceNumber: signed.cuInvoiceNumber,
     cuSerial: signed.cuSerial,
   });
 
   await db.update(payments).set({ status: "confirmed" }).where(eq(payments.id, payment.id));
+
+  // US-F2: confirmation SMS with the receipt link, triggered on the
+  // payment-posted-to-ledger event (works for M-Pesa or, later, offline
+  // entry) — not the raw webhook, per that story's acceptance criteria.
+  if (tenant) {
+    const receiptUrl = `${env.NEXT_PUBLIC_SITE_URL}/r/${receiptToken}`;
+    const amountKes = (payment.amountCents / 100).toLocaleString();
+    await sendTenantSms({
+      orgId: payment.orgId,
+      tenantProfileId: tenant.id,
+      phone: tenant.phone,
+      template: "payment_confirmed",
+      message: `Payment received: KES ${amountKes}. Thank you, ${tenant.name}. Receipt: ${receiptUrl}`,
+    });
+  }
 }

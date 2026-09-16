@@ -1,7 +1,9 @@
 import { and, eq, lte, gte, or, isNull } from "drizzle-orm";
 import { db } from "@/db";
-import { leases, invoices, invoiceLines } from "@/db/schema";
+import { leases, invoices, invoiceLines, tenantProfiles } from "@/db/schema";
 import { nairobiToday, billingPeriodFor, dueDateFor, invoiceReference } from "./period";
+import { createPayLinkToken, payLinkUrl } from "@/lib/payments/pay-link";
+import { sendTenantSms } from "@/lib/notifications/sms";
 
 /**
  * US-C1: generate this period's rent invoice for every active lease whose
@@ -25,8 +27,12 @@ export async function generateMonthlyInvoices(
       billingDay: leases.billingDay,
       rentAmountCents: leases.rentAmountCents,
       unitId: leases.unitId,
+      tenantProfileId: leases.tenantProfileId,
+      tenantName: tenantProfiles.name,
+      tenantPhone: tenantProfiles.phone,
     })
     .from(leases)
+    .innerJoin(tenantProfiles, eq(leases.tenantProfileId, tenantProfiles.id))
     .where(
       and(
         eq(leases.status, "active"),
@@ -68,6 +74,18 @@ export async function generateMonthlyInvoices(
     });
 
     created++;
+
+    // US-F1 (simplified timing — sends on generation, not "N days before
+    // due"; a proper reminder schedule is follow-up work, see US-F3).
+    const token = createPayLinkToken(inserted[0].id);
+    const amountKes = (lease.rentAmountCents / 100).toLocaleString();
+    await sendTenantSms({
+      orgId: lease.orgId,
+      tenantProfileId: lease.tenantProfileId,
+      phone: lease.tenantPhone,
+      template: "rent_invoice",
+      message: `Hi ${lease.tenantName}, your rent of KES ${amountKes} for ${billingPeriod.slice(0, 7)} is due. Pay via M-Pesa: ${payLinkUrl(token)}`,
+    });
   }
 
   return { created, skipped };

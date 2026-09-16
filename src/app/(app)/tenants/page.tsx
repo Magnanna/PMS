@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { listTenants } from "./actions";
+import { InviteTenantButton } from "@/components/InviteTenantButton";
+import { Badge } from "@/components/Badge";
 
 export const dynamic = "force-dynamic";
 
@@ -37,8 +39,15 @@ export default async function TenantsPage() {
                   <td className="px-5 py-3">
                     <div className="font-medium">{t.name}</div>
                   </td>
-                  <td className="px-5 py-3 text-[var(--color-ink-400)] tnum">
+                  <td className="px-3 py-3 text-[var(--color-ink-400)] tnum">
                     +{t.phone} {t.email ? `· ${t.email}` : ""}
+                  </td>
+                  <td className="px-5 py-3">
+                    {t.userId ? (
+                      <Badge tone="good">Portal active</Badge>
+                    ) : (
+                      <InviteTenantButton tenantProfileId={t.id} />
+                    )}
                   </td>
                 </tr>
               ))}

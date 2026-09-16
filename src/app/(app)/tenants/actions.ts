@@ -9,6 +9,8 @@ import { tenantProfiles } from "@/db/schema";
 import { requireOrgMembership } from "@/lib/auth/session";
 import { assertCan } from "@/lib/auth/permissions";
 import { normalizeKenyanPhone } from "@/lib/payments/phone";
+import { createTenantInviteToken, tenantInviteUrl } from "@/lib/auth/tenant-invite";
+import { sendTenantSms } from "@/lib/notifications/sms";
 
 const tenantSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -68,4 +70,35 @@ export async function createTenant(_prev: FormState, formData: FormData): Promis
 export async function listTenants() {
   const { orgId } = await requireOrgMembership();
   return db.select().from(tenantProfiles).where(eq(tenantProfiles.orgId, orgId));
+}
+
+/** US-A4: invite a tenant to their portal via SMS (WhatsApp deep link too) —
+ *  no separate "signup" friction. The claim link itself carries the auth,
+ *  matching Zeno's client-portal token pattern. */
+export async function inviteTenantToPortal(
+  tenantProfileId: string
+): Promise<{ error: string | null; smsSent?: boolean }> {
+  const { orgId, role } = await requireOrgMembership();
+  assertCan(role, "tenant:invite");
+
+  const [tenant] = await db
+    .select()
+    .from(tenantProfiles)
+    .where(eq(tenantProfiles.id, tenantProfileId));
+
+  if (!tenant || tenant.orgId !== orgId) return { error: "Tenant not found" };
+  if (tenant.userId) return { error: "This tenant already has portal access" };
+
+  const token = createTenantInviteToken(tenant.id);
+  const url = tenantInviteUrl(token);
+
+  const result = await sendTenantSms({
+    orgId,
+    tenantProfileId: tenant.id,
+    phone: tenant.phone,
+    template: "tenant_invite",
+    message: `Hi ${tenant.name}, set up your tenant portal to view your lease and pay rent: ${url}`,
+  });
+
+  return { error: null, smsSent: result.ok };
 }

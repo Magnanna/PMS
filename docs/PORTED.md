@@ -14,7 +14,7 @@ behavior goes in a new module that wraps/extends the ported one.
 | `src/lib/receipts/etims.ts` | `src/lib/etims.ts` | working tree, Sep 2026 | verbatim (dropped the `qrUrl` field from `TaxDeviceResult` — our QR points at our own `/r/[token]` page, not KRA's itax URL, built separately in the receipt page) |
 | `src/lib/receipts/qr.ts` | `src/lib/receipts/qr.ts` | working tree, Sep 2026 | verbatim |
 
-Still to port when their stories land: `sms/advanta.ts` (US-F1, M4).
+| `src/lib/sms/advanta.ts` | `src/lib/sms/advanta.ts` | working tree, Sep 2026 | adapted: platform-wide env-var credentials instead of per-org DB config (our schema has no per-org SMS settings table) |
 `posting.ts`/`match.ts`/`receipts/tokens.ts` were **not** ported verbatim —
 our ledger schema (Section 7's flat account-tag model), receipts table
 (token lives directly on the row, no separate `receiptTokens` table), and

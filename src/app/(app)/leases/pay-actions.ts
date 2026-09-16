@@ -6,6 +6,7 @@ import { leases, tenantProfiles, invoices, mpesaCredentials, payments } from "@/
 import { requireOrgMembership } from "@/lib/auth/session";
 import { requestStkPush, type MpesaCredentials } from "@/lib/payments/mpesaDaraja";
 import { invoiceBalanceCents } from "@/lib/payments/allocate";
+import { createPayLinkToken, payLinkUrl } from "@/lib/payments/pay-link";
 
 /**
  * US-C2 (staff-initiated slice — the tenant-facing "Pay now" button in the
@@ -83,4 +84,32 @@ export async function chargeRentViaMpesa(
   });
 
   return { error: null };
+}
+
+/** US-H3: landlord can grab a copyable pay link independent of SMS
+ *  delivery (e.g. to forward via WhatsApp manually). */
+export async function getPayLinkForLease(
+  leaseId: string
+): Promise<{ url: string | null; error: string | null }> {
+  const { orgId } = await requireOrgMembership();
+
+  const [lease] = await db
+    .select()
+    .from(leases)
+    .where(and(eq(leases.id, leaseId), eq(leases.orgId, orgId)));
+  if (!lease) return { url: null, error: "Lease not found" };
+
+  const [oldestOpenInvoice] = await db
+    .select()
+    .from(invoices)
+    .where(
+      and(eq(invoices.leaseId, leaseId), inArray(invoices.status, ["open", "partially_paid"]))
+    )
+    .orderBy(asc(invoices.billingPeriod))
+    .limit(1);
+
+  if (!oldestOpenInvoice) return { url: null, error: "No outstanding invoice for this lease" };
+
+  const token = createPayLinkToken(oldestOpenInvoice.id);
+  return { url: payLinkUrl(token), error: null };
 }

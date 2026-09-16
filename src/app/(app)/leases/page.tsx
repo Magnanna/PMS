@@ -5,6 +5,7 @@ import { and, eq, inArray } from "drizzle-orm";
 import { requireOrgMembership } from "@/lib/auth/session";
 import { TerminateButton } from "./lease-actions";
 import { ChargeMpesaButton } from "./charge-mpesa-button";
+import { CopyPayLinkButton } from "./copy-pay-link-button";
 import { invoiceBalanceCents } from "@/lib/payments/allocate";
 import { Badge } from "@/components/Badge";
 
@@ -98,6 +99,7 @@ export default async function LeasesPage() {
                       {lease.status === "active" && (
                         <div className="flex items-center justify-end gap-2">
                           {balanceCents > 0 && <ChargeMpesaButton leaseId={lease.id} />}
+                          {balanceCents > 0 && <CopyPayLinkButton leaseId={lease.id} />}
                           <TerminateButton leaseId={lease.id} />
                         </div>
                       )}
